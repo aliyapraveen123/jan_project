@@ -1,0 +1,24 @@
+0:00
+Hello everyone, welcome to this tutorial on Python programming.
+0:05
+Today we will learn about variables and data types in Python.
+0:10
+Variables are containers for storing data values.
+0:15
+Python has various data types including integers, floats, strings, and booleans.
+0:20
+Let's start with integers. An integer is a whole number without decimals.
+0:25
+For example, x equals 5 is an integer variable.
+0:30
+Next, we have floats which are numbers with decimal points.
+0:35
+For example, y equals 3.14 is a float.
+0:40
+Strings are sequences of characters enclosed in quotes.
+0:45
+For example, name equals "Python" is a string.
+0:50
+Booleans represent True or False values.
+0:55
+These are the basic data types in Python programming.
