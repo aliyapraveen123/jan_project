@@ -5,13 +5,16 @@ An advanced AI-driven system that transforms YouTube educational videos into str
 ## ✨ Features
 
 ### 1. **Automatic Transcript Extraction**
-- Extracts full transcripts from any YouTube video with captions
+- **Two Methods Available:**
+  - **Gemini AI Extraction** (Recommended): Uses Google's Gemini AI to analyze and transcribe videos directly, even those without captions
+  - **Traditional Caption API**: Extracts existing captions from YouTube videos
 - Supports all YouTube URL formats
 - Handles videos of any length
+- Automatic fallback if primary method fails
 - Download transcript as text file
 
 ### 2. **AI-Generated Summaries**
-- Comprehensive video summaries using Google Gemini AI
+- Comprehensive video summaries using Google Gemini 1.5 Flash
 - Organized into clear sections
 - Brief overview and detailed breakdown
 - Main topics and key takeaways
@@ -59,6 +62,26 @@ An advanced AI-driven system that transforms YouTube educational videos into str
    pip install -r requirements.txt
    ```
 
+### Configure Your API Key
+
+**Option 1: Use .env file (Recommended - Best UX!)**
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and add your API key:
+   ```bash
+   GOOGLE_API_KEY=your_actual_api_key_here
+   ```
+
+3. The app will automatically load your API key!
+
+**Option 2: Manual Entry**
+- Skip the .env setup
+- Enter your API key in the sidebar when you run the app
+
 ### Get Your API Key
 
 1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
@@ -76,10 +99,15 @@ An advanced AI-driven system that transforms YouTube educational videos into str
 2. **Open in browser**
    - The app will automatically open at `http://localhost:8501`
 
-3. **Configure API Key**
-   - Enter your Google Gemini API key in the sidebar
+3. **API Key Status**
+   - If using `.env`: You'll see "✅ API Key loaded from .env file"
+   - If not: Enter your API key in the sidebar
 
-4. **Process a Video**
+4. **Choose Transcript Method**
+   - ✅ **Gemini AI** (Default): Works with any video, even without captions
+   - **Caption API**: Requires video to have closed captions enabled
+
+5. **Process a Video**
    - Paste any YouTube video URL
    - Click "Process Video"
    - Wait for AI to analyze the content

@@ -27,7 +27,8 @@ class AIService:
         """Configure Google Gemini API"""
         try:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-flash-latest')
+            # Use gemini-2.5-flash for better video and content understanding
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
             return True
         except Exception as e:
             print(f"Error configuring API: {str(e)}")

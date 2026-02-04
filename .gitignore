@@ -46,6 +46,20 @@ Thumbs.db
 
 # Logs
 *.log
+test_results.log
+
+# Test & Debug Files (optional)
+test_automated.py
+test_audio_extraction.py
+test_api.py
+list_models.py
+debug_transcript.py
+
+# Temporary audio files
+*.mp3
+*.wav
+*.m4a
+/tmp/
 
 # API Keys (be careful!)
 config.py

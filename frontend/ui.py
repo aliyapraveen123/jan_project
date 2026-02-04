@@ -1,14 +1,18 @@
 """
-Main Streamlit UI Application
-Frontend interface for YouTube Learning Assistant
+Main Streamlit UI Application - ChatGPT Style
+Clean, minimal interface with no sidebar
 """
 
 import streamlit as st
 import sys
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Add backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from backend.services.transcript_service import TranscriptService
 from backend.services.ai_service import AIService
@@ -16,176 +20,141 @@ from backend.utils.url_utils import URLUtils
 from backend.utils.file_utils import FileUtils
 
 
-# Configure page
+# Configure page - minimal layout
 st.set_page_config(
     page_title="YouTube Learning Assistant",
     page_icon="🎓",
-    layout="wide"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
+
+# Hide sidebar completely
+st.markdown("""
+<style>
+    [data-testid="stSidebar"] {display: none;}
+    .block-container {padding-top: 2rem;}
+</style>
+""", unsafe_allow_html=True)
 
 
 def main():
-    """Main application function"""
-    # Title and description
-    st.title("🎓 YouTube Learning Assistant")
-    st.markdown("""
-    Transform any YouTube educational video into structured learning content with:
-    - 📄 Automatic transcript extraction
-    - 📝 AI-generated summaries
-    - 🎯 Key learning points
-    - 📊 Interactive quizzes (10 questions)
-    """)
+    """Main application function - ChatGPT style interface"""
     
-    # Sidebar for API key
-    with st.sidebar:
-        st.header("⚙️ Configuration")
-        api_key = st.text_input("Enter Google Gemini API Key", type="password")
-        st.markdown("""
-        **Don't have an API key?**
-        
-        Get a free API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-        """)
-        
-        st.markdown("---")
-        st.markdown("### 📖 How to Use")
-        st.markdown("""
-        1. Enter your Gemini API key
-        2. Paste a YouTube video URL
-        3. Click 'Process Video'
-        4. Explore the generated content:
-           - Read the summary
-           - Study key points
-           - Take the quiz!
-        """)
+    # Load API key from environment
+    api_key = os.getenv("GOOGLE_API_KEY", "")
     
-    # Main content area
     if not api_key:
-        st.warning("⚠️ Please enter your Google Gemini API key in the sidebar to get started.")
-        return
+        st.error("⚠️ API Key not found in .env file")
+        st.info("Please add GOOGLE_API_KEY to your .env file")
+        st.code("GOOGLE_API_KEY=your_key_here", language="bash")
+        st.stop()
     
-    # Video URL input
-    video_url = st.text_input("🔗 Enter YouTube Video URL:", placeholder="https://www.youtube.com/watch?v=...")
+    # Minimal header
+    st.title("🎓 YouTube Learning Assistant")
+    st.caption("Paste a YouTube URL to get AI-powered summary, key points, and quiz")
     
-    if st.button("🚀 Process Video", type="primary"):
-        if not video_url:
-            st.error("Please enter a YouTube video URL")
-            return
+    # Single input - ChatGPT style
+    video_url = st.text_input(
+        "Enter YouTube URL",
+        placeholder="https://www.youtube.com/watch?v=...",
+        label_visibility="collapsed"
+    )
+    
+    # Process when URL is entered
+    if video_url and video_url.strip():
         
         # Validate URL
         if not URLUtils.is_valid_youtube_url(video_url):
-            st.error("Invalid YouTube URL. Please check and try again.")
-            return
+            st.error("❌ Invalid YouTube URL. Please check and try again.")
+            st.stop()
         
         # Extract video ID
         video_id = URLUtils.extract_video_id(video_url)
         if not video_id:
-            st.error("Could not extract video ID from URL.")
-            return
+            st.error("❌ Could not extract video ID from URL.")
+            st.stop()
         
         # Show video
         st.video(video_url)
         
-        # Get transcript
-        with st.spinner("📥 Fetching video transcript..."):
-            transcript_service = TranscriptService()
-            transcript, transcript_list = transcript_service.get_transcript(video_id)
-        
-        if not transcript:
-            st.error("Could not fetch transcript. Make sure the video has captions enabled.")
-            st.info("""
-            **Tips:**
-            - Try videos from Khan Academy, TED-Ed, or freeCodeCamp
-            - Check if video has CC (Closed Captions) button
-            - Try with mobile hotspot if on restricted network
-            """)
-            return
-        
-        st.success(f"✅ Transcript extracted successfully! ({len(transcript.split())} words)")
-        
-        # Store in session state
-        st.session_state.transcript = transcript
-        st.session_state.video_id = video_id
-        
-        # Initialize AI service
-        ai_service = AIService(api_key)
-        
-        # Create tabs for different features
-        tab1, tab2, tab3, tab4 = st.tabs([
-            "📄 Transcript", 
-            "📝 Summary", 
-            "🎯 Key Points", 
-            "📊 Quiz"
-        ])
-        
-        # Tab 1: Transcript
-        with tab1:
-            st.subheader("📄 Full Transcript")
-            with st.expander("View Full Transcript", expanded=False):
-                st.text_area("Transcript", transcript, height=400)
+        # Processing with status updates
+        with st.status("🔍 Analyzing video...", expanded=True) as status:
             
-            # Download transcript
-            filename = FileUtils.generate_filename("transcript", video_id, "txt")
+            # Step 1: Get transcript
+            st.write("📥 Extracting transcript...")
+            transcript_service = TranscriptService(api_key)
+            transcript, _ = transcript_service.get_transcript(video_id)
+            
+            if not transcript:
+                status.update(label="❌ Failed", state="error")
+                st.error("Could not extract transcript from this video.")
+                st.info("💡 **Possible reasons:**\n"
+                       "- Video may be age-restricted or private\n"
+                       "- API quota exceeded (free tier: 20 requests/day)\n"
+                       "- Network connectivity issue\n\n"
+                       "**Try:** Videos with captions enabled (Khan Academy, TED, Coursera)")
+                st.stop()
+            
+            st.write(f"✅ Transcript extracted ({len(transcript.split())} words)")
+            
+            # Step 2: Generate AI content
+            ai_service = AIService(api_key)
+            
+            st.write("🤖 Generating AI summary...")
+            summary = ai_service.generate_summary(transcript)
+            
+            st.write("🎯 Extracting key points...")
+            key_points = ai_service.extract_key_points(transcript)
+            
+            st.write("📊 Creating quiz...")
+            quiz_data = ai_service.generate_quiz(transcript)
+            
+            status.update(label="✅ Analysis complete!", state="complete")
+        
+        # Display results - ChatGPT style streaming appearance
+        st.markdown("---")
+        
+        # Summary
+        st.markdown("### 📝 Summary")
+        if summary:
+            st.markdown(summary)
             st.download_button(
-                label="📥 Download Transcript",
-                data=transcript,
-                file_name=filename,
+                "📥 Download Summary",
+                summary,
+                file_name=f"summary_{video_id}.txt",
                 mime="text/plain"
             )
         
-        # Tab 2: Summary
-        with tab2:
-            with st.spinner("🤖 Generating comprehensive summary..."):
-                summary = ai_service.generate_summary(transcript)
-            
-            if summary:
-                st.subheader("📝 Video Summary")
-                st.markdown(summary)
-                
-                # Download summary
-                filename = FileUtils.generate_filename("summary", video_id, "txt")
-                st.download_button(
-                    label="📥 Download Summary",
-                    data=summary,
-                    file_name=filename,
-                    mime="text/plain"
-                )
+        st.markdown("---")
         
-        # Tab 3: Key Points
-        with tab3:
-            with st.spinner("🎯 Extracting key learning points..."):
-                key_points = ai_service.extract_key_points(transcript)
-            
-            if key_points:
-                st.subheader("🎯 Core Learning Points")
-                st.markdown(key_points)
-                
-                # Download key points
-                filename = FileUtils.generate_filename("keypoints", video_id, "txt")
-                st.download_button(
-                    label="📥 Download Key Points",
-                    data=key_points,
-                    file_name=filename,
-                    mime="text/plain"
-                )
+        # Key Points
+        st.markdown("### 🎯 Key Learning Points")
+        if key_points:
+            st.markdown(key_points)
+            st.download_button(
+                "📥 Download Key Points",
+                key_points,
+                file_name=f"keypoints_{video_id}.txt",
+                mime="text/plain"
+            )
         
-        # Tab 4: Quiz
-        with tab4:
-            with st.spinner("📊 Generating 10 quiz questions from transcript..."):
-                quiz_data = ai_service.generate_quiz(transcript)
-            
-            if quiz_data:
-                from frontend.components.quiz_component import display_quiz
-                display_quiz(quiz_data)
-                
-                # Download quiz
-                quiz_json = FileUtils.format_quiz_json(quiz_data)
-                filename = FileUtils.generate_filename("quiz", video_id, "json")
-                st.download_button(
-                    label="📥 Download Quiz (JSON)",
-                    data=quiz_json,
-                    file_name=filename,
-                    mime="application/json"
-                )
+        st.markdown("---")
+        
+        # Quiz
+        st.markdown("### 📊 Test Your Knowledge")
+        if quiz_data:
+            from frontend.components.quiz_component import display_quiz
+            display_quiz(quiz_data)
+        
+        # Transcript (collapsible)
+        with st.expander("📄 View Full Transcript"):
+            st.text_area("", transcript, height=300, label_visibility="collapsed")
+            st.download_button(
+                "📥 Download Transcript",
+                transcript,
+                file_name=f"transcript_{video_id}.txt",
+                mime="text/plain"
+            )
 
 
 if __name__ == "__main__":
