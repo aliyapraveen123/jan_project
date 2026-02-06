@@ -97,6 +97,20 @@ class TranscriptService:
                 'outtmpl': output_path,
                 'quiet': True,
                 'no_warnings': True,
+                # Add headers to bypass bot detection
+                'http_headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-us,en;q=0.5',
+                    'Sec-Fetch-Mode': 'navigate',
+                },
+                # Extract info only first, then download
+                'noplaylist': True,
+                'extract_flat': False,
+                # Ignore errors and continue
+                'ignoreerrors': True,
+                # Use external downloader for better success rate
+                'external_downloader': 'aria2c' if os.system('which aria2c > /dev/null 2>&1') == 0 else None,
             }
             
             video_url = f"https://www.youtube.com/watch?v={video_id}"

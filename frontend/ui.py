@@ -157,9 +157,14 @@ def main():
                     st.error("Could not extract transcript from this video.")
                     st.info("💡 **Possible reasons:**\n"
                            "- Video may be age-restricted or private\n"
+                           "- Audio download blocked (YouTube bot protection)\n"
                            "- API quota exceeded (free tier: 20 requests/day)\n"
                            "- Network connectivity issue\n\n"
-                           "**Try:** Videos with captions enabled (Khan Academy, TED, Coursera)")
+                           "**✅ Best Solution:** Use videos with captions enabled\n"
+                           "- Khan Academy, TED Talks, Coursera work perfectly!\n"
+                           "- Captions = FREE + FAST (no API calls for transcription)\n\n"
+                           "**⚠️ Note:** Audio transcription may not work on Streamlit Cloud due to YouTube's bot protection. "
+                           "For videos without captions, consider running the app locally.")
                     st.stop()
                 
                 st.write(f"✅ Transcript extracted ({len(transcript.split())} words)")
