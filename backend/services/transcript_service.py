@@ -17,7 +17,18 @@ class TranscriptService:
     
     def __init__(self, api_key: Optional[str] = None):
         """Initialize with optional API key for audio transcription fallback"""
-        self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
+        if api_key:
+            self.api_key = api_key
+        else:
+            # Try Streamlit secrets first (for cloud deployment)
+            try:
+                import streamlit as st
+                if hasattr(st, 'secrets'):
+                    self.api_key = st.secrets.get("GOOGLE_API_KEY")
+                else:
+                    self.api_key = os.getenv("GOOGLE_API_KEY")
+            except:
+                self.api_key = os.getenv("GOOGLE_API_KEY")
     
     @staticmethod
     def _get_caption_transcript(video_id: str) -> Tuple[Optional[str], Optional[List[Dict]]]:

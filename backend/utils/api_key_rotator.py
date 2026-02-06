@@ -23,25 +23,47 @@ class APIKeyRotator:
         self.usage_data = self._load_usage()
     
     def _load_keys(self) -> List[str]:
-        """Load all API keys from environment"""
+        """Load all API keys from environment or Streamlit secrets"""
         keys = []
         
-        # Primary key
-        primary = os.getenv("GOOGLE_API_KEY")
-        if primary:
-            keys.append(primary)
+        # Try to load from Streamlit secrets first (for cloud deployment)
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets'):
+                # Primary key
+                primary = st.secrets.get("GOOGLE_API_KEY")
+                if primary:
+                    keys.append(primary)
+                
+                # Secondary keys
+                key2 = st.secrets.get("GOOGLE_API_KEY_2")
+                if key2 and key2 != "your_second_api_key_here":
+                    keys.append(key2)
+                
+                key3 = st.secrets.get("GOOGLE_API_KEY_3")
+                if key3 and key3 != "your_third_api_key_here":
+                    keys.append(key3)
+        except:
+            pass
         
-        # Secondary keys
-        key2 = os.getenv("GOOGLE_API_KEY_2")
-        if key2:
-            keys.append(key2)
-        
-        key3 = os.getenv("GOOGLE_API_KEY_3")
-        if key3:
-            keys.append(key3)
+        # If no keys from secrets, try environment variables (for local)
+        if not keys:
+            # Primary key
+            primary = os.getenv("GOOGLE_API_KEY")
+            if primary:
+                keys.append(primary)
+            
+            # Secondary keys
+            key2 = os.getenv("GOOGLE_API_KEY_2")
+            if key2 and key2 != "your_second_api_key_here":
+                keys.append(key2)
+            
+            key3 = os.getenv("GOOGLE_API_KEY_3")
+            if key3 and key3 != "your_third_api_key_here":
+                keys.append(key3)
         
         if not keys:
-            raise ValueError("No API keys found in .env file")
+            raise ValueError("No API keys found in .env file or Streamlit secrets")
         
         return keys
     
