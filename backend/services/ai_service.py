@@ -1,6 +1,6 @@
 """
 AI Service for generating summaries, key points, and quizzes
-Uses Google Gemini AI
+Uses Google Gemini AI with API key rotation support
 """
 
 import google.generativeai as genai
@@ -21,6 +21,16 @@ class AIService:
         """
         self.api_key = api_key
         self.model = None
+        self.configure_api()
+    
+    def update_api_key(self, new_key: str):
+        """
+        Update API key (for key rotation)
+        
+        Args:
+            new_key: New API key to use
+        """
+        self.api_key = new_key
         self.configure_api()
     
     def configure_api(self) -> bool:
@@ -98,7 +108,7 @@ class AIService:
             print(f"Error extracting key points: {str(e)}")
             return None
     
-    def generate_quiz(self, transcript: str, max_retries: int = 3) -> Optional[List[Dict]]:
+    def generate_quiz(self, transcript: str, max_retries: int = 1) -> Optional[List[Dict]]:
         """
         Generate exactly 10 quiz questions from transcript
         

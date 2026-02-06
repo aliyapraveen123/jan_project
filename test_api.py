@@ -1,44 +1,36 @@
-import google.generativeai as genai
+"""
+Test Gemini API configuration
+"""
+
 import os
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 # Load environment variables
 load_dotenv()
 
 # Get API key
-api_key = os.getenv('GOOGLE_API_KEY')
-print(f"API Key: {api_key[:10]}...{api_key[-5:]}")
+api_key = os.getenv("GOOGLE_API_KEY")
 
-# Configure API
-genai.configure(api_key=api_key)
+print(f"API Key loaded: {api_key[:20]}..." if api_key else "API Key NOT found")
 
-# List available models
-print("\n🔍 Available Gemini Models:")
-print("-" * 60)
+if not api_key:
+    print("ERROR: No API key found in .env file")
+    exit(1)
 
-for model in genai.list_models():
-    if 'generateContent' in model.supported_generation_methods:
-        print(f"✅ {model.name}")
-        print(f"   Display Name: {model.display_name}")
-        print(f"   Description: {model.description}")
-        print()
-
-print("\n🧪 Testing model with simple prompt...")
+# Try to configure and test Gemini
 try:
-    # Try gemini-1.5-flash
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    response = model.generate_content("Say hello")
-    print("✅ SUCCESS with gemini-1.5-flash!")
-    print(f"Response: {response.text}")
-except Exception as e:
-    print(f"❌ FAILED with gemini-1.5-flash: {e}")
+    print("\nConfiguring Gemini API...")
+    genai.configure(api_key=api_key)
     
-    # Try alternative model
-    try:
-        print("\n🔄 Trying models/gemini-1.5-flash...")
-        model = genai.GenerativeModel('models/gemini-1.5-flash')
-        response = model.generate_content("Say hello")
-        print("✅ SUCCESS with models/gemini-1.5-flash!")
-        print(f"Response: {response.text}")
-    except Exception as e2:
-        print(f"❌ FAILED: {e2}")
+    print("Testing model initialization...")
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    
+    print("Sending test prompt...")
+    response = model.generate_content("Say 'Hello, API is working!'")
+    
+    print(f"\n✅ SUCCESS! Response: {response.text}")
+    
+except Exception as e:
+    print(f"\n❌ ERROR: {str(e)}")
+    print(f"Error type: {type(e).__name__}")
