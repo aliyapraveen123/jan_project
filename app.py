@@ -6,11 +6,18 @@ Organized with separate backend and frontend modules
 import sys
 import os
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(__file__))
+# Add project root and subdirectories to path
+project_root = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, project_root)
+sys.path.insert(0, os.path.join(project_root, 'frontend'))
+sys.path.insert(0, os.path.join(project_root, 'backend'))
 
 # Import and run the frontend UI
-from frontend.ui import main
+try:
+    from frontend.ui import main
+except ImportError:
+    # Fallback for deployment environments
+    from ui import main
 
 if __name__ == "__main__":
     main()
